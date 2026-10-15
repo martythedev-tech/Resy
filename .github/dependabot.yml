@@ -52,6 +52,10 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: node
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: docker
     directory: /server
@@ -59,6 +63,10 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: node
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /

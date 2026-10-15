@@ -1,6 +1,7 @@
 {
   "name": "resy",
   "version": "3.0.0",
+  "license": "MIT",
   "type": "module",
   "private": true,
   "engines": {

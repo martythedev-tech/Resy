@@ -1,6 +1,7 @@
 {
   "name": "resy-server",
   "version": "3.0.0",
+  "license": "MIT",
   "description": "Backend API for Resy",
   "main": "dist/index.js",
   "engines": {

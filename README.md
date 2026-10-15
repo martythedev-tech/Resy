@@ -120,4 +120,6 @@ bash scripts/check-supply-chain-host.sh <user@host>
 
 ## License
 
-See [`LICENSE`](LICENSE).
+Resy is available under the permissive [MIT License](LICENSE). Anyone may use,
+copy, modify, publish, distribute, sublicense, or sell the software, including
+for commercial purposes, provided the copyright and license notice is retained.
