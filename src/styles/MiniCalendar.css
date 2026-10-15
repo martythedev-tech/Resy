@@ -1,0 +1,217 @@
+.mini-calendar-container {
+  position: relative;
+}
+
+.mini-calendar-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 150px;
+  min-height: 38px;
+  cursor: pointer;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.mini-calendar-trigger:hover {
+  border-color: var(--primary);
+}
+
+.trigger-icon {
+  margin-left: auto;
+  color: var(--muted);
+  display: inline-flex;
+}
+
+.trigger-calendar-icon { color: var(--primary-readable); }
+
+.mini-calendar-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px;
+  min-width: 280px;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  animation: dropdownSlide 0.2s ease;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mini-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mini-month-label {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.mini-nav-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mini-nav-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-contrast);
+}
+
+.mini-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.mini-weekday {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-subtle);
+  text-align: center;
+  padding: 4px;
+  text-transform: uppercase;
+}
+
+.mini-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.mini-day {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mini-day:hover:not(.empty) {
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.mini-day.empty {
+  cursor: default;
+}
+
+.mini-day.today {
+  font-weight: 700;
+  color: var(--primary-readable);
+}
+
+.mini-day.selected {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  font-weight: 750;
+}
+
+.mini-day.selected:hover {
+  background: var(--primary);
+}
+
+.mini-day.has-booking:not(.selected) {
+  font-weight: 600;
+}
+
+.booking-dot {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--primary-readable);
+}
+
+.mini-day.selected .booking-dot {
+  background: var(--primary-contrast);
+}
+
+.mini-calendar-legend {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-subtle);
+}
+
+.legend-item .booking-dot {
+  position: static;
+  transform: none;
+}
+
+@media (max-width: 768px) {
+  .mini-calendar-dropdown {
+    left: auto;
+    right: 0;
+    min-width: 260px;
+  }
+}
+
+/* Light mode: solid dropdown */
+[data-theme="light"] .mini-calendar-dropdown {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: #ffffff;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 12px 32px -8px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .mini-calendar-trigger {
+  background: #ffffff;
+}

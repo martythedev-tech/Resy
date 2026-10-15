@@ -1,0 +1,281 @@
+name: CI
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-compatibility:
+    name: Node ${{ matrix.node-version }} Compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 22.13.0
+          - 24
+          - 26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Build backend
+        run: npm run build
+        working-directory: server
+
+      - name: Verify native SQLite
+        run: |
+          node -e "const Database = require('better-sqlite3'); const db = new Database(':memory:'); db.exec('CREATE TABLE runtime_check (id INTEGER PRIMARY KEY)'); const result = db.pragma('integrity_check', { simple: true }); db.close(); if (result !== 'ok') throw new Error('SQLite integrity check failed: ' + result); console.log('Node', process.version, 'SQLite native module integrity:', result)"
+        working-directory: server
+
+  frontend:
+    name: Frontend Lint + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Deployment preflight regression
+        run: bash scripts/deployment-preflight-smoke.sh
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+
+      - name: Audit development dependencies
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  backend:
+    name: Backend Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+        working-directory: server
+
+      - name: Audit development dependencies
+        run: npm audit --audit-level=high
+        working-directory: server
+
+      - name: Build backend
+        run: npm run build
+        working-directory: server
+
+      - name: Integration security regression
+        run: npm run test:integration-security
+        working-directory: server
+
+      - name: Notification security regression
+        run: DB_PATH=/tmp/resy-notification-security.db npm run test:notification-security
+        working-directory: server
+
+      - name: Upload lifecycle regression
+        run: npm run test:upload-lifecycle
+        working-directory: server
+
+      - name: Configuration policy regression
+        run: npm run test:config-policy
+        working-directory: server
+
+      - name: Directory configuration regression
+        run: DB_PATH=/tmp/resy-directory-config.db JWT_SECRET=ci-directory-secret npm run test:directory-config
+        working-directory: server
+
+      - name: Diagnostics regression
+        run: npm run test:diagnostics
+        working-directory: server
+
+  smoke-api:
+    name: API Smoke (Local SQLite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - backend
+    env:
+      JWT_SECRET: ci-jwt-secret
+      ENABLE_DEFAULT_ADMIN: "false"
+      ENABLE_FIRST_LOGIN_BOOTSTRAP: "true"
+      DEFAULT_ADMIN_EMAIL: admin@company.com
+      DEFAULT_ADMIN_PASSWORD: ci-admin-password
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Initialize DB (migrate)
+        run: |
+          npm run migrate
+        working-directory: server
+
+      - name: Migration preservation regression
+        run: npm run test:migrations
+        working-directory: server
+
+      - name: No-show restart checkpoint regression
+        run: DB_PATH=/tmp/resy-no-show-checkpoint.db npm run test:no-show-checkpoint
+        working-directory: server
+
+      - name: SQLite capacity regression
+        run: npm run test:capacity
+        working-directory: server
+
+      - name: Booking retention regression
+        run: |
+          DB_PATH=/tmp/resy-retention-smoke.db npm run migrate
+          DB_PATH=/tmp/resy-retention-smoke.db npm run test:retention
+        working-directory: server
+
+      - name: Booking reporting regression
+        run: npm run test:reporting
+        working-directory: server
+
+      - name: Recurrence generation regression
+        run: npm run test:recurrence
+        working-directory: server
+
+      - name: Start backend
+        run: |
+          nohup npm run dev > /tmp/resy-api.log 2>&1 &
+          echo $! > /tmp/resy-api.pid
+          for i in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:5000/api/health > /dev/null; then
+              echo "API is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not start in time"
+          tail -n 200 /tmp/resy-api.log || true
+          exit 1
+        working-directory: server
+
+      - name: Run smoke API checks
+        run: |
+          python3 scripts/smoke-api.py \
+            --base http://127.0.0.1:5000 \
+            --email "$DEFAULT_ADMIN_EMAIL" \
+            --password "$DEFAULT_ADMIN_PASSWORD"
+
+      - name: Run Reports Viewer authorization regression checks
+        run: |
+          python3 server/scripts/report-viewer-api-smoke.py \
+            --base http://127.0.0.1:5000 \
+            --email "$DEFAULT_ADMIN_EMAIL" \
+            --password "$DEFAULT_ADMIN_PASSWORD"
+
+      - name: Run directory configuration API regression checks
+        run: |
+          python3 server/scripts/directory-config-api-smoke.py \
+            --base http://127.0.0.1:5000 \
+            --email "$DEFAULT_ADMIN_EMAIL" \
+            --password "$DEFAULT_ADMIN_PASSWORD"
+
+      - name: Run recurrence API regression checks
+        run: |
+          python3 server/scripts/recurrence-api-smoke.py \
+            --base http://127.0.0.1:5000 \
+            --email "$DEFAULT_ADMIN_EMAIL" \
+            --password "$DEFAULT_ADMIN_PASSWORD"
+
+      - name: Run booking lifecycle API regression checks
+        run: |
+          python3 server/scripts/booking-lifecycle-api-smoke.py \
+            --base http://127.0.0.1:5000 \
+            --email "$DEFAULT_ADMIN_EMAIL" \
+            --password "$DEFAULT_ADMIN_PASSWORD"
+
+      - name: Show backend logs on failure
+        if: failure()
+        run: tail -n 300 /tmp/resy-api.log || true
+
+      - name: Upload backend logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-smoke-backend-log
+          path: /tmp/resy-api.log
+          if-no-files-found: ignore
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f /tmp/resy-api.pid ]; then
+            kill "$(cat /tmp/resy-api.pid)" || true
+          fi

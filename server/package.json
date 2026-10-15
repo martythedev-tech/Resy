@@ -1,0 +1,60 @@
+{
+  "name": "resy-server",
+  "version": "3.0.0",
+  "description": "Backend API for Resy",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=22.13 <23 || >=24 <25 || >=26 <27"
+  },
+  "scripts": {
+    "dev": "node --watch -r ts-node/register src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "migrate": "node -r ts-node/register src/config/migrate.ts",
+    "migrate:password-reset": "node -r ts-node/register src/config/migrate-password-reset.ts",
+    "migrate:equipment-options": "node -r ts-node/register src/config/migrate-equipment-options.ts",
+    "migrate:remove-manager": "node -r ts-node/register src/config/migrate-remove-manager.ts",
+    "migrate:customization-rules": "node -r ts-node/register src/config/migrate-customization-rules.ts",
+    "migrate:room-buffer": "node -r ts-node/register src/config/migrate-room-buffer.ts",
+    "migrate:booking-templates": "node -r ts-node/register src/config/migrate-booking-templates.ts",
+    "test:capacity": "node scripts/capacity-sqlite.js",
+    "test:retention": "node -r ts-node/register scripts/retention-smoke.ts",
+    "test:reporting": "node -r ts-node/register scripts/reporting-smoke.ts",
+    "test:recurrence": "node -r ts-node/register scripts/recurrence-smoke.ts",
+    "test:integration-security": "node -r ts-node/register scripts/integration-security-smoke.ts",
+    "test:notification-security": "node -r ts-node/register scripts/notification-security-smoke.ts",
+    "test:migrations": "node -r ts-node/register scripts/migration-smoke.ts",
+    "test:no-show-checkpoint": "node -r ts-node/register scripts/no-show-checkpoint-smoke.ts",
+    "test:upload-lifecycle": "node -r ts-node/register scripts/upload-lifecycle-smoke.ts",
+    "test:config-policy": "node -r ts-node/register scripts/config-policy-smoke.ts",
+    "test:directory-config": "node -r ts-node/register scripts/directory-config-smoke.ts",
+    "test:diagnostics": "node -r ts-node/register scripts/diagnostics-smoke.ts",
+    "seed": "node -r ts-node/register src/config/seed.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "12.11.1",
+    "cors": "^2.8.5",
+    "date-fns": "^2.30.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.22.3",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "ldapts": "^8.0.9",
+    "multer": "^2.4.0",
+    "node-cron": "^4.6.0",
+    "nodemailer": "^10.0.10"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "9.6.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/multer": "^1.4.8",
+    "@types/node": "^24.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

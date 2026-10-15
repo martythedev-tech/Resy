@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Resy - Mockup</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">Rooms</div>
+        <nav class="nav">
+          <a href="#login" class="nav-link">Login</a>
+          <a href="#rooms" class="nav-link">Room Picker</a>
+          <a href="#calendar" class="nav-link">Calendar</a>
+        </nav>
+        <div class="subtle">Single office · 2 buildings</div>
+      </aside>
+
+      <main class="content">
+        <section id="login" class="panel">
+          <div class="card auth-card">
+            <h1>Sign in</h1>
+            <p class="subtle">Email + password (local auth for now)</p>
+            <div class="field">
+              <label>Email</label>
+              <input class="input" type="email" placeholder="you@company.com" />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input class="input" type="password" placeholder="••••••••" />
+            </div>
+            <button class="btn primary" style="width:100%;margin-top:10px;">Sign in</button>
+            <div class="subtle" style="margin-top:8px;">SSO (local AD) can be enabled later.</div>
+          </div>
+        </section>
+
+        <section id="rooms" class="panel">
+          <div class="toolbar">
+            <div>
+              <h2>Room Picker</h2>
+              <p class="subtle">Select building → room → time</p>
+            </div>
+            <div class="filters">
+              <select class="input">
+                <option>Building A</option>
+                <option>Building B</option>
+              </select>
+              <select class="input">
+                <option>Capacity</option>
+                <option>4+</option>
+                <option>8+</option>
+                <option>12+</option>
+              </select>
+              <select class="input">
+                <option>TV</option>
+                <option>Whiteboard</option>
+                <option>Hybrid</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="room-grid">
+            <div class="room-card">
+              <div class="room-title">Orion</div>
+              <div class="subtle">Building A · 8 seats · TV</div>
+              <div class="status available">Available</div>
+              <button class="btn">View Schedule</button>
+            </div>
+            <div class="room-card">
+              <div class="room-title">Nova</div>
+              <div class="subtle">Building A · 12 seats · Hybrid</div>
+              <div class="status busy">Busy until 1:30 PM</div>
+              <button class="btn">View Schedule</button>
+            </div>
+            <div class="room-card">
+              <div class="room-title">Atlas</div>
+              <div class="subtle">Building A · 6 seats · Whiteboard</div>
+              <div class="status available">Available</div>
+              <button class="btn">View Schedule</button>
+            </div>
+            <div class="room-card">
+              <div class="room-title">Zenith</div>
+              <div class="subtle">Building B · 10 seats · TV</div>
+              <div class="status busy">Booked 2:00–3:30 PM</div>
+              <button class="btn">View Schedule</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="calendar" class="panel">
+          <div class="toolbar">
+            <div>
+              <h2>Calendar</h2>
+              <p class="subtle">Max 2 hours · 15‑min buffer · admin override</p>
+            </div>
+            <div class="filters">
+              <input class="input" type="date" />
+              <select class="input">
+                <option>Orion (Building A)</option>
+                <option>Nova (Building A)</option>
+                <option>Atlas (Building A)</option>
+                <option>Zenith (Building B)</option>
+              </select>
+              <button class="btn primary">New Booking</button>
+            </div>
+          </div>
+
+          <div class="calendar">
+            <div class="time-col">
+              <div>8:00</div><div>9:00</div><div>10:00</div><div>11:00</div>
+              <div>12:00</div><div>1:00</div><div>2:00</div><div>3:00</div>
+              <div>4:00</div><div>5:00</div>
+            </div>
+            <div class="day-col">
+              <div class="slot free"></div>
+              <div class="slot free"></div>
+              <div class="slot booked">Team Sync</div>
+              <div class="slot free"></div>
+              <div class="slot free"></div>
+              <div class="slot booked">Client Call</div>
+              <div class="slot free"></div>
+              <div class="slot free"></div>
+              <div class="slot free"></div>
+              <div class="slot free"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

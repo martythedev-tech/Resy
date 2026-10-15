@@ -1,0 +1,153 @@
+name: Publish Docker Images
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Docker image tag to publish
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Build and Publish Images
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.image_tag || github.ref_name }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: |
+            VITE_RELEASE_CHANNEL=${{ github.event_name == 'push' && 'release' || 'dev' }}
+            VITE_BUILD_ID=${{ github.event_name == 'push' && github.ref_name || inputs.image_tag }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/resy-web:${{ env.IMAGE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/resy-web:latest
+
+      - name: Build and push api image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/resy-api:${{ env.IMAGE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/resy-api:latest
+
+  release-assets:
+    name: Publish Release Assets
+    runs-on: ubuntu-latest
+    needs:
+      - publish
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    env:
+      IMAGE_TAG: ${{ github.ref_name }}
+    permissions:
+      contents: write
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create source bundle
+        run: |
+          mkdir -p release-assets
+          tar -czf "release-assets/resy-${IMAGE_TAG}-source.tar.gz" \
+            --exclude=.git \
+            --exclude=node_modules \
+            --exclude=server/node_modules \
+            --exclude=dist \
+            --exclude=server/dist \
+            --exclude=server/data \
+            --exclude=server/uploads \
+            -C . .
+
+      - name: Pull release images
+        run: |
+          docker pull "ghcr.io/${{ github.repository_owner }}/resy-web:${IMAGE_TAG}"
+          docker pull "ghcr.io/${{ github.repository_owner }}/resy-api:${IMAGE_TAG}"
+
+      - name: Export docker image archives
+        run: |
+          docker save "ghcr.io/${{ github.repository_owner }}/resy-web:${IMAGE_TAG}" | gzip > "release-assets/resy-web-${IMAGE_TAG}-linux-amd64-docker.tar.gz"
+          docker save "ghcr.io/${{ github.repository_owner }}/resy-api:${IMAGE_TAG}" | gzip > "release-assets/resy-api-${IMAGE_TAG}-linux-amd64-docker.tar.gz"
+
+      - name: Create checksum manifest
+        run: |
+          cd release-assets
+          sha256sum \
+            "resy-${IMAGE_TAG}-source.tar.gz" \
+            "resy-web-${IMAGE_TAG}-linux-amd64-docker.tar.gz" \
+            "resy-api-${IMAGE_TAG}-linux-amd64-docker.tar.gz" \
+            > "resy-${IMAGE_TAG}-SHA256SUMS.txt"
+
+      - name: Create draft GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view "${IMAGE_TAG}" >/dev/null 2>&1; then
+            gh release create "${IMAGE_TAG}" --draft --generate-notes --title "Resy ${IMAGE_TAG}"
+          fi
+
+      - name: Upload source bundle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${IMAGE_TAG}" "release-assets/resy-${IMAGE_TAG}-source.tar.gz" --clobber
+
+      - name: Upload web image archive
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${IMAGE_TAG}" "release-assets/resy-web-${IMAGE_TAG}-linux-amd64-docker.tar.gz" --clobber
+
+      - name: Upload API image archive
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${IMAGE_TAG}" "release-assets/resy-api-${IMAGE_TAG}-linux-amd64-docker.tar.gz" --clobber
+
+      - name: Upload checksum manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${IMAGE_TAG}" "release-assets/resy-${IMAGE_TAG}-SHA256SUMS.txt" --clobber
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "${IMAGE_TAG}" --draft=false

@@ -1,0 +1,70 @@
+name: ${COMPOSE_PROJECT_NAME:-resy}
+
+services:
+  api:
+    image: ${RESY_IMAGE_REGISTRY:-ghcr.io/martythedev-tech}/resy-api:${RESY_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      HOST: 0.0.0.0
+      PORT: 5000
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
+      DATA_DIR: /app/data
+      UPLOADS_DIR: /app/uploads
+      AUTO_MIGRATE: "true"
+      DIAGNOSTIC_RETENTION_DAYS: ${DIAGNOSTIC_RETENTION_DAYS:-30}
+      ENABLE_DEFAULT_ADMIN: ${RESY_ENABLE_DEFAULT_ADMIN:-false}
+      DEFAULT_ADMIN_EMAIL: ${RESY_DEFAULT_ADMIN_EMAIL:-admin@company.com}
+      DEFAULT_ADMIN_PASSWORD: ${RESY_DEFAULT_ADMIN_PASSWORD:-}
+      ENABLE_FIRST_LOGIN_BOOTSTRAP: ${RESY_ENABLE_FIRST_LOGIN_BOOTSTRAP:-false}
+      ENABLE_DIRECTORY_AUTH: ${ENABLE_DIRECTORY_AUTH:-false}
+      DIRECTORY_TYPE: ${DIRECTORY_TYPE:-ad}
+      DIRECTORY_URL: ${DIRECTORY_URL:-}
+      DIRECTORY_BASE_DN: ${DIRECTORY_BASE_DN:-}
+      DIRECTORY_BIND_DN: ${DIRECTORY_BIND_DN:-}
+      DIRECTORY_BIND_PASSWORD: ${DIRECTORY_BIND_PASSWORD:-}
+      DIRECTORY_CA_CERT_PATH: ${DIRECTORY_CA_CERT_PATH:-/app/certs}
+      DIRECTORY_ALLOW_LOCAL_FALLBACK: ${DIRECTORY_ALLOW_LOCAL_FALLBACK:-true}
+      DIRECTORY_TLS_REJECT_UNAUTHORIZED: ${DIRECTORY_TLS_REJECT_UNAUTHORIZED:-true}
+      DIRECTORY_ALLOW_INSECURE_LDAP: ${DIRECTORY_ALLOW_INSECURE_LDAP:-false}
+      DIRECTORY_TIMEOUT_MS: ${DIRECTORY_TIMEOUT_MS:-8000}
+      DIRECTORY_CONNECT_TIMEOUT_MS: ${DIRECTORY_CONNECT_TIMEOUT_MS:-5000}
+      DIRECTORY_SYNC_ROLES: ${DIRECTORY_SYNC_ROLES:-true}
+      DIRECTORY_SYNC_PROFILE: ${DIRECTORY_SYNC_PROFILE:-true}
+      DIRECTORY_ALLOWED_GROUPS: ${DIRECTORY_ALLOWED_GROUPS:-}
+      DIRECTORY_ADMIN_GROUPS: ${DIRECTORY_ADMIN_GROUPS:-}
+      DIRECTORY_ROOM_MANAGER_GROUPS: ${DIRECTORY_ROOM_MANAGER_GROUPS:-}
+      ALLOW_INSECURE_WEBHOOKS: ${ALLOW_INSECURE_WEBHOOKS:-false}
+    volumes:
+      - resy_data:/app/data
+      - resy_uploads:/app/uploads
+      - ./docker/certs:/app/certs:ro
+    ports:
+      - "${RESY_API_BIND:-127.0.0.1}:${RESY_API_PORT:-5000}:5000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  web:
+    image: ${RESY_IMAGE_REGISTRY:-ghcr.io/martythedev-tech}/resy-web:${RESY_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${RESY_WEB_PORT:-3000}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8080/ >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  resy_data:
+  resy_uploads:

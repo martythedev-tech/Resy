@@ -1,0 +1,40 @@
+# Environment
+.env
+server/.env
+server/.env.*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+*.tar.gz
+
+# App data and uploads
+server/data/
+server/uploads/
+uploads/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Private project notes (never publish)
+Project_Notes.md
+ProjectNotes.md
+ProjectNotesArchive/
