@@ -18,7 +18,7 @@ ENV VITE_BUILD_ID=${VITE_BUILD_ID}
 
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.30.5-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.31.6-alpine AS runtime
 
 LABEL org.opencontainers.image.source="https://github.com/martythedev-tech/Resy" \
       org.opencontainers.image.title="Resy Web" \
