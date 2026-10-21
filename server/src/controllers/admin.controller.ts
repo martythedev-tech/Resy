@@ -16,6 +16,7 @@ import { validateCustomFieldSchema } from '../utils/customFields';
 import { validateBrandingUrl } from '../utils/brandingUrl';
 import { recordOperationalWarning } from '../services/diagnostics.service';
 import { webhookPolicyService } from '../services/webhookPolicy.service';
+import { isValidEmail } from '../utils/email';
 
 const VALID_TIMEZONES = [
   'America/New_York',    // Eastern
@@ -1632,8 +1633,7 @@ export class AdminController {
         return res.status(400).json({ error: 'Email, password, and name required' });
       }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!isValidEmail(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
       }
 

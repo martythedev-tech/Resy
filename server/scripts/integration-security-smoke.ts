@@ -1,6 +1,14 @@
 import assert from 'assert';
 import { groupMatches } from '../src/services/directoryAuth.service';
 import { createPinnedWebhookLookup, isAllowedPrivateWebhookAddress, isBlockedWebhookAddress, normalizeWebhookOrigin, validateWebhookUrl } from '../src/utils/webhookSecurity';
+import { isValidEmail } from '../src/utils/email';
+
+for (const email of ['user@example.com', 'first.last+tag@example.co.uk']) {
+  assert.equal(isValidEmail(email), true, `${email} must be accepted`);
+}
+for (const email of ['', 'missing-at.example.com', 'two@@example.com', 'user@example', 'user@.example.com', 'user@example.com.', ' user@example.com', 'user\n@example.com']) {
+  assert.equal(isValidEmail(email), false, `${JSON.stringify(email)} must be rejected`);
+}
 
 assert.equal(groupMatches('CN=Resy-Admins,OU=Groups,DC=example,DC=com', 'Resy-Admins'), true);
 assert.equal(groupMatches('CN=Resy-Admins-Old,OU=Groups,DC=example,DC=com', 'Resy-Admins'), false);

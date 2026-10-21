@@ -22,6 +22,15 @@ export const resolveBrandAssetUrl = (value: string | null | undefined, apiOrigin
   return '';
 };
 
+const resolveSafeDocumentAssetUrl = (value: string): string => {
+  try {
+    const parsed = new URL(value, window.location.origin);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.href : '';
+  } catch {
+    return '';
+  }
+};
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const normalizeHex = (value?: string | null): string | null => {
@@ -130,23 +139,27 @@ export const applyBrandingToDocument = (
 
   const existingFavicon = document.querySelector("link[data-resy-favicon]") as HTMLLinkElement | null;
   if (branding.favicon_url?.trim()) {
-    const href = branding.favicon_url.trim();
-    const link = existingFavicon || document.createElement('link');
-    const extension = href.split(/[?#]/, 1)[0].split('.').pop()?.toLowerCase();
-    const mimeTypes: Record<string, string> = {
-      ico: 'image/x-icon',
-      png: 'image/png',
-      gif: 'image/gif',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      webp: 'image/webp',
-    };
-    link.rel = 'icon';
-    link.href = href;
-    link.dataset.resyFavicon = 'true';
-    if (extension && mimeTypes[extension]) link.type = mimeTypes[extension];
-    else link.removeAttribute('type');
-    document.head.appendChild(link);
+    const href = resolveSafeDocumentAssetUrl(branding.favicon_url.trim());
+    if (!href) {
+      existingFavicon?.remove();
+    } else {
+      const link = existingFavicon || document.createElement('link');
+      const extension = href.split(/[?#]/, 1)[0].split('.').pop()?.toLowerCase();
+      const mimeTypes: Record<string, string> = {
+        ico: 'image/x-icon',
+        png: 'image/png',
+        gif: 'image/gif',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        webp: 'image/webp',
+      };
+      link.rel = 'icon';
+      link.href = href;
+      link.dataset.resyFavicon = 'true';
+      if (extension && mimeTypes[extension]) link.type = mimeTypes[extension];
+      else link.removeAttribute('type');
+      document.head.appendChild(link);
+    }
   } else if (existingFavicon) {
     existingFavicon.remove();
   }

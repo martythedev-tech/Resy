@@ -195,7 +195,7 @@ export class BookingsController {
     const unit = unitMap[frequency];
     if (!unit) return undefined;
 
-    const cadence = interval === 1 ? `Repeats ${frequency.replace(/ly$/, 'ly')}` : `Repeats every ${interval} ${unit}s`;
+    const cadence = interval === 1 ? `Repeats ${frequency}` : `Repeats every ${interval} ${unit}s`;
     if (recurrence.end_date) {
       return `${cadence} until ${this.formatRecurrenceDate(String(recurrence.end_date))}`;
     }

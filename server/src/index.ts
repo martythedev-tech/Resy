@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import bookingsRoutes from './routes/bookings.routes';
@@ -87,6 +88,17 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Apply a generous safety ceiling to every API route. Sensitive authentication
+// and booking-mutation endpoints also retain their stricter route-level limits.
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', apiLimiter);
 
 // Correlate server failures without retaining request bodies or credentials.
 app.use((req: AuthRequest, res, next) => {

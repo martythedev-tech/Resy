@@ -125,22 +125,46 @@ function decryptSecret(value: string): string {
 }
 
 function loadCaCertificates(inputPath: string): string[] | undefined {
-  const resolvedPath = inputPath.trim();
-  if (!resolvedPath || !fs.existsSync(resolvedPath)) {
+  const configuredPath = inputPath.trim();
+  if (!configuredPath) {
     return undefined;
   }
 
-  const stat = fs.statSync(resolvedPath);
+  // CA material is mounted into a fixed directory. Treat the configured value
+  // only as either that directory or the basename of a certificate within it.
+  const certificateRoot = path.resolve(process.cwd(), 'certs');
+  if (!fs.existsSync(certificateRoot)) return undefined;
+
+  const requestedName = path.basename(configuredPath);
+  const isCertificateFile = /\.(pem|crt|cer)$/i.test(requestedName);
+  if (requestedName !== 'certs' && !isCertificateFile) {
+    throw new Error('Directory CA certificate path must reference the certs directory or a PEM/CRT/CER file within it');
+  }
+
+  const realRoot = fs.realpathSync(certificateRoot);
+  const resolvedPath = isCertificateFile ? path.join(realRoot, requestedName) : realRoot;
+  if (!fs.existsSync(resolvedPath)) return undefined;
+
+  const realPath = fs.realpathSync(resolvedPath);
+  if (realPath !== realRoot && !realPath.startsWith(`${realRoot}${path.sep}`)) {
+    throw new Error('Directory CA certificate path resolves outside the configured certificate directory');
+  }
+
+  const stat = fs.statSync(realPath);
   if (stat.isDirectory()) {
-    const certs = fs.readdirSync(resolvedPath)
+    const certs = fs.readdirSync(realPath)
       .filter(name => /\.(pem|crt|cer)$/i.test(name))
       .sort()
-      .map(name => fs.readFileSync(path.join(resolvedPath, name), 'utf8'))
+      .map(name => {
+        const certificatePath = fs.realpathSync(path.join(realPath, name));
+        if (!certificatePath.startsWith(`${realRoot}${path.sep}`) || !fs.statSync(certificatePath).isFile()) return '';
+        return fs.readFileSync(certificatePath, 'utf8');
+      })
       .filter(Boolean);
     return certs.length ? certs : undefined;
   }
 
-  return [fs.readFileSync(resolvedPath, 'utf8')];
+  return stat.isFile() ? [fs.readFileSync(realPath, 'utf8')] : undefined;
 }
 
 function escapeLdapValue(value: string): string {
