@@ -6,6 +6,7 @@ import { pool } from '../config/database';
 import { AuthRequest } from '../middleware/auth';
 import { directoryAuthService, DirectoryIdentity } from '../services/directoryAuth.service';
 import { recordOperationalWarning } from '../services/diagnostics.service';
+import { isValidEmail } from '../utils/email';
 
 export class AuthController {
   private recordRejectedSignIn(
@@ -127,8 +128,7 @@ export class AuthController {
       const firstLoginBootstrapEnabled =
         String(process.env.ENABLE_FIRST_LOGIN_BOOTSTRAP || '').toLowerCase() === 'true';
       if (existingUsers === 0 && firstLoginBootstrapEnabled) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(normalizedEmail)) {
+        if (!isValidEmail(normalizedEmail)) {
           return res.status(400).json({ error: 'Invalid email format' });
         }
         if (normalizedPassword.length < 8) {
@@ -255,8 +255,7 @@ export class AuthController {
       }
 
       // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!isValidEmail(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
       }
 
