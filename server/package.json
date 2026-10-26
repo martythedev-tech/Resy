@@ -37,15 +37,15 @@
     "better-sqlite3": "12.11.1",
     "cors": "^2.8.5",
     "date-fns": "^4.4.0",
-    "dotenv": "^18.0.8",
+    "dotenv": "^18.0.9",
     "express": "^4.22.3",
     "express-rate-limit": "^8.7.1",
     "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.2",
     "ldapts": "^9.2.0",
-    "multer": "^2.4.0",
+    "multer": "^2.5.0",
     "node-cron": "^4.6.0",
-    "nodemailer": "^10.1.2"
+    "nodemailer": "^10.2.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "9.6.0",
