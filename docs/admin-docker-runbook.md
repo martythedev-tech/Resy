@@ -12,7 +12,7 @@ Existing installations that used legacy image, environment, Compose, or volume n
 
 ```dotenv
 COMPOSE_PROJECT_NAME=resy
-RESY_IMAGE_TAG=v3.0.0
+RESY_IMAGE_TAG=v3.0.2
 JWT_SECRET=<set-a-strong-random-secret>
 APP_BASE_URL=https://resy.example.com
 PUBLIC_APP_URL=https://resy.example.com
@@ -29,18 +29,21 @@ The default persistent volumes are `resy_resy_data` and `resy_resy_uploads`. The
 
 ## Update
 
-1. Back up the SQLite database and uploads volume.
-2. Verify that the backup is readable.
-3. Change only `RESY_IMAGE_TAG` in `.env.deploy`.
-4. Run:
+1. Record the active image names and digests.
+2. Create an online SQLite backup and copy the uploads volume, deployment environment, and Compose file into a protected recovery directory.
+3. Generate and verify a SHA-256 manifest for the recovery directory.
+4. Change only `RESY_IMAGE_TAG` in `.env.deploy`.
+5. Run:
 
 ```bash
 ./scripts/deploy-published.sh --env-file .env.deploy
 ```
 
-5. Complete the acceptance checks below.
+6. Complete the acceptance checks below, including a controlled restart.
 
 The preflight refuses an update if the expected volume pair is missing, incomplete, or inconsistent with the active API container.
+
+The current supported tag is `v3.0.2`. It has no database migration or configuration change from `v3.0.1`.
 
 ## Rollback
 
@@ -54,6 +57,8 @@ docker compose --env-file .env.deploy -f docker-compose.deploy.yml config --imag
 docker compose --env-file .env.deploy -f docker-compose.deploy.yml logs --tail=200 api web
 curl -fsS http://127.0.0.1:5000/api/health
 ```
+
+If `RESY_API_PORT` is overridden, use that host port for the health request.
 
 Expected image names:
 
@@ -70,6 +75,8 @@ Expected image names:
 - Reports and CSV export work for authorized roles.
 - Email, webhook, and Directory integrations work if enabled.
 - SQLite integrity and foreign-key checks pass.
+- Record and upload counts match the pre-deployment baseline.
+- Running image repository digests match the verified release manifests.
 - Data remains present after a controlled stack restart.
 
 ## Directory Group Examples

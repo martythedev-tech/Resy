@@ -64,7 +64,7 @@ Create an untracked `.env.deploy` file:
 
 ```dotenv
 COMPOSE_PROJECT_NAME=resy
-RESY_IMAGE_TAG=v3.0.0
+RESY_IMAGE_TAG=v3.0.2
 JWT_SECRET=<set-a-strong-random-secret>
 APP_BASE_URL=https://resy.example.com
 PUBLIC_APP_URL=https://resy.example.com
@@ -84,6 +84,32 @@ For an update or rollback, change only `RESY_IMAGE_TAG` to an immutable version 
 ```
 
 The wrapper validates the Compose configuration, immutable semantic-version tag, project identity, and volume pair before it pulls or recreates containers. A registry login is needed only if the selected package is private.
+
+`v3.0.2` is the current supported image tag. It updates runtime dependencies without a database migration or configuration change from `v3.0.1`.
+
+## Verify A Published Release
+
+Inspect the release before deployment:
+
+```bash
+gh release view v3.0.2 --repo martythedev-tech/Resy
+docker buildx imagetools inspect ghcr.io/martythedev-tech/resy-web:v3.0.2
+docker buildx imagetools inspect ghcr.io/martythedev-tech/resy-api:v3.0.2
+```
+
+Download the release assets into a temporary directory and validate their checksum manifest:
+
+```bash
+verify_dir="$(mktemp -d)"
+gh release download v3.0.2 \
+  --repo martythedev-tech/Resy \
+  --dir "$verify_dir"
+
+cd "$verify_dir"
+sha256sum -c resy-v3.0.2-SHA256SUMS.txt
+```
+
+Both image indexes should contain `linux/amd64` and `linux/arm64` manifests. Remove the temporary verification directory after validation.
 
 ## Directory TLS
 
@@ -105,7 +131,7 @@ Before approving a deployment, verify the checksums, take a database and uploads
 ```bash
 npm run build:release
 # or
-npm run build:release -- 3.0.0
+npm run build:release -- 3.0.2
 ```
 
 This sets `VITE_APP_VERSION`, `VITE_RELEASE_CHANNEL=release`, and a Git-based build identifier.
