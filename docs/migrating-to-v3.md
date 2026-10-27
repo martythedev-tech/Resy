@@ -49,9 +49,11 @@ Create `.env.deploy` with the new identifiers:
 
 ```dotenv
 COMPOSE_PROJECT_NAME=resy
-RESY_IMAGE_TAG=v3.0.0
+RESY_IMAGE_TAG=v3.0.2
 JWT_SECRET=<the-existing-secret>
 ```
+
+`v3.0.2` is the current supported v3 release. Use a newer immutable release tag if one is documented as supported when performing the migration.
 
 Translate any legacy application variables to their `RESY_*` equivalents, then run the normal update path without `--first-install`:
 

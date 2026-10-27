@@ -2,6 +2,8 @@
 
 Backend API for Resy.
 
+The current supported release is `v3.0.2`. See the repository [`CHANGELOG.md`](../CHANGELOG.md) for release details.
+
 ## Runtime Support
 
 Node.js 24 is the canonical production and development runtime. Node.js 22.13.x and Node.js 26.x are also exercised by CI for source compatibility. The package engine range is deliberately bounded to `>=22.13 <23 || >=24 <25 || >=26 <27`; no support is implied for other or future major versions.
@@ -36,6 +38,10 @@ npm run dev
 - `POST /api/auth/register`
 - `GET /api/auth/me`
 - `PATCH /api/auth/password`
+
+## Health Endpoint
+
+- `GET /api/health`
 
 ## Admin Endpoints
 

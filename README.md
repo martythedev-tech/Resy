@@ -2,6 +2,10 @@
 
 Resy is a full-stack conference room booking application with calendar scheduling, room policies, approvals, reporting, and administrative controls.
 
+## Current Release
+
+The current supported release is [`v3.0.2`](https://github.com/martythedev-tech/Resy/releases/tag/v3.0.2). It includes the latest dependency and runtime security fixes and does not require a database migration or configuration change from `v3.0.1`.
+
 ## Features
 
 - JWT authentication and optional LDAP/Active Directory authentication
@@ -56,6 +60,8 @@ RESY_WEB_PORT=13000 RESY_API_PORT=15000 docker compose up -d --build
 ```
 
 For registry-based deployments using versioned `resy-web` and `resy-api` images, see [`docs/deployment.md`](docs/deployment.md) and [`docs/admin-docker-runbook.md`](docs/admin-docker-runbook.md). The deployment wrapper performs a fail-closed persistent-volume preflight before changing containers.
+
+Use immutable release tags such as `v3.0.2`; do not deploy the mutable `latest` tag to an environment that must support reliable rollback.
 
 Existing installations that used the earlier project identifiers should follow [`docs/migrating-to-v3.md`](docs/migrating-to-v3.md) before starting Resy v3.
 
