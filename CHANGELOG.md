@@ -2,6 +2,12 @@
 
 All notable public changes to Resy are documented here.
 
+## 3.0.3 - 2026-11-02
+
+- Updated the canonical container build and API runtime to Node.js 24.22.2, including the fixes from the October 2026 Node.js security release.
+- Patched the transitive `qs` denial-of-service vulnerability by updating the API runtime dependency to 6.16.2.
+- Retained Node.js 22.13, 24, and 26 compatibility; this release has no database migration or configuration change from `v3.0.2`.
+
 ## 3.0.2 - 2026-10-27
 
 - Updated the web runtime base image and application dependencies, including `lucide-react`, `dotenv`, and the TypeScript-ESLint packages.
