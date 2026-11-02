@@ -12,7 +12,7 @@ Existing installations that used legacy image, environment, Compose, or volume n
 
 ```dotenv
 COMPOSE_PROJECT_NAME=resy
-RESY_IMAGE_TAG=v3.0.2
+RESY_IMAGE_TAG=v3.0.3
 JWT_SECRET=<set-a-strong-random-secret>
 APP_BASE_URL=https://resy.example.com
 PUBLIC_APP_URL=https://resy.example.com
@@ -43,7 +43,7 @@ The default persistent volumes are `resy_resy_data` and `resy_resy_uploads`. The
 
 The preflight refuses an update if the expected volume pair is missing, incomplete, or inconsistent with the active API container.
 
-The current supported tag is `v3.0.2`. It has no database migration or configuration change from `v3.0.1`.
+The current supported tag is `v3.0.3`. It has no database migration or configuration change from `v3.0.2`.
 
 ## Rollback
 
