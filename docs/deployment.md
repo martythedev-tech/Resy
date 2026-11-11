@@ -64,7 +64,7 @@ Create an untracked `.env.deploy` file:
 
 ```dotenv
 COMPOSE_PROJECT_NAME=resy
-RESY_IMAGE_TAG=v3.0.3
+RESY_IMAGE_TAG=v3.0.4
 JWT_SECRET=<set-a-strong-random-secret>
 APP_BASE_URL=https://resy.example.com
 PUBLIC_APP_URL=https://resy.example.com
@@ -85,28 +85,28 @@ For an update or rollback, change only `RESY_IMAGE_TAG` to an immutable version 
 
 The wrapper validates the Compose configuration, immutable semantic-version tag, project identity, and volume pair before it pulls or recreates containers. A registry login is needed only if the selected package is private.
 
-`v3.0.3` is the current supported image tag. It updates the Node.js runtime and API dependencies without a database migration or configuration change from `v3.0.2`.
+`v3.0.4` is the current supported image tag. It modernizes the room-booking interface and updates reviewed web and API dependencies without a database migration or configuration change from `v3.0.3`.
 
 ## Verify A Published Release
 
 Inspect the release before deployment:
 
 ```bash
-gh release view v3.0.3 --repo martythedev-tech/Resy
-docker buildx imagetools inspect ghcr.io/martythedev-tech/resy-web:v3.0.3
-docker buildx imagetools inspect ghcr.io/martythedev-tech/resy-api:v3.0.3
+gh release view v3.0.4 --repo martythedev-tech/Resy
+docker buildx imagetools inspect ghcr.io/martythedev-tech/resy-web:v3.0.4
+docker buildx imagetools inspect ghcr.io/martythedev-tech/resy-api:v3.0.4
 ```
 
 Download the release assets into a temporary directory and validate their checksum manifest:
 
 ```bash
 verify_dir="$(mktemp -d)"
-gh release download v3.0.3 \
+gh release download v3.0.4 \
   --repo martythedev-tech/Resy \
   --dir "$verify_dir"
 
 cd "$verify_dir"
-sha256sum -c resy-v3.0.3-SHA256SUMS.txt
+sha256sum -c resy-v3.0.4-SHA256SUMS.txt
 ```
 
 Both image indexes should contain `linux/amd64` and `linux/arm64` manifests. Remove the temporary verification directory after validation.
@@ -131,7 +131,7 @@ Before approving a deployment, verify the checksums, take a database and uploads
 ```bash
 npm run build:release
 # or
-npm run build:release -- 3.0.3
+npm run build:release -- 3.0.4
 ```
 
 This sets `VITE_APP_VERSION`, `VITE_RELEASE_CHANNEL=release`, and a Git-based build identifier.

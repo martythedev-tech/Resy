@@ -2,6 +2,14 @@
 
 All notable public changes to Resy are documented here.
 
+## 3.0.4 - 2026-11-11
+
+- Modernized the application shell and room-discovery experience with a responsive, brand-aware visual system and container-aware room cards.
+- Improved accessibility and user preferences with skip navigation, labeled primary navigation, inert mobile content, and system-theme initialization.
+- Improved room-image and rendering performance with explicit dimensions, lazy asynchronous loading, layout-shift prevention, and offscreen rendering isolation.
+- Updated React Router DOM, Lucide React, Nodemailer, Express Rate Limit, ESLint, and Node.js type definitions.
+- Retained Node.js 22.13, 24, and 26 compatibility; this release has no database migration or configuration-breaking change from `v3.0.3`.
+
 ## 3.0.3 - 2026-11-02
 
 - Updated the canonical container build and API runtime to Node.js 24.22.2, including the fixes from the October 2026 Node.js security release.
