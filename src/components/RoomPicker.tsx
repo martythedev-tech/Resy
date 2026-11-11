@@ -147,7 +147,15 @@ export const RoomPicker = () => {
           <article key={room.id} className="room-card">
             <div className={`room-image-wrapper${room.image_url ? '' : ' room-image-placeholder'}`}>
               {room.image_url ? (
-                <img src={`${API_BASE}${room.image_url}`} alt={room.name} className="room-image" />
+                <img
+                  src={`${API_BASE}${room.image_url}`}
+                  alt={room.name}
+                  className="room-image"
+                  loading="lazy"
+                  decoding="async"
+                  width="720"
+                  height="450"
+                />
               ) : (
                 <Building2 size={30} aria-hidden="true" />
               )}
