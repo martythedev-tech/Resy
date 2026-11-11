@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   Building2,
@@ -75,6 +75,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [branding, setBranding] = useState<Branding | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const contentRef = useRef<HTMLElement>(null);
   const channelLabel = RELEASE_CHANNEL === 'release' ? 'release' : 'dev';
   const buildLabel = `v${APP_VERSION} [${channelLabel}] (${BUILD_ID})`;
 
@@ -117,12 +118,26 @@ export const Layout = ({ children }: LayoutProps) => {
     setMobileNavOpen(false);
   }, [location.pathname, location.search]);
 
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+
+    content.inert = mobileNavOpen;
+    document.body.classList.toggle('mobile-navigation-open', mobileNavOpen);
+
+    return () => {
+      content.inert = false;
+      document.body.classList.remove('mobile-navigation-open');
+    };
+  }, [mobileNavOpen]);
+
   if (!isAuthenticated) {
     return <div>{children}</div>;
   }
 
   return (
     <div className={`app${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <header className="mobile-header">
         <div className="mobile-brand">
           {branding?.logo_url ? (
@@ -138,6 +153,7 @@ export const Layout = ({ children }: LayoutProps) => {
           onClick={() => setMobileNavOpen(open => !open)}
           aria-label={mobileNavOpen ? 'Close navigation' : 'Open navigation'}
           aria-expanded={mobileNavOpen}
+          aria-controls="primary-navigation"
         >
           {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -145,7 +161,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
       {mobileNavOpen && <button className="nav-scrim" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)} />}
 
-      <aside className={`sidebar${mobileNavOpen ? ' mobile-open' : ''}`}>
+      <aside id="primary-navigation" className={`sidebar${mobileNavOpen ? ' mobile-open' : ''}`}>
         <div className="brand">
           {branding?.logo_url ? (
             <img src={resolveBrandAssetUrl(branding.logo_url, API_BASE)} alt={branding.company_name} className="brand-logo" />
@@ -165,7 +181,7 @@ export const Layout = ({ children }: LayoutProps) => {
             {sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
           </button>
         </div>
-        <nav className="nav">
+        <nav className="nav" aria-label="Primary navigation">
           <div className="nav-section-label">Workspace</div>
           <NavLink to="/rooms" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
             <Building2 className="nav-icon" size={18} />
@@ -235,7 +251,7 @@ export const Layout = ({ children }: LayoutProps) => {
         </div>
       </aside>
 
-      <main className="content">{children}</main>
+      <main id="main-content" ref={contentRef} className="content" tabIndex={-1}>{children}</main>
     </div>
   );
 };
