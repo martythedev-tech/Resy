@@ -2,6 +2,13 @@
 
 All notable public changes to Resy are documented here.
 
+## 3.0.5 - 2026-11-20
+
+- Updated the canonical container build and API runtime to the Node.js 24.22.3 security release, including high-severity HTTP/2 and TLS fixes.
+- Updated Nodemailer to 10.5.0, including the recipient-domain validation security fixes from 10.4.1 and later DKIM and header-encoding corrections.
+- Updated Express Rate Limit, Dotenv, Lucide React, Vite, and TypeScript-ESLint dependencies.
+- Retained Node.js 22.13, 24, and 26 source compatibility; this release has no database migration or configuration-breaking change from `v3.0.4`.
+
 ## 3.0.4 - 2026-11-11
 
 - Modernized the application shell and room-discovery experience with a responsive, brand-aware visual system and container-aware room cards.
