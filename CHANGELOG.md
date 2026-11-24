@@ -2,6 +2,13 @@
 
 All notable public changes to Resy are documented here.
 
+## 3.0.6 - 2026-11-24
+
+- Updated Express Rate Limit to 8.7.5, including safer configuration handling that ignores inherited `Object.prototype` properties.
+- Updated LDAPts to 9.3.1, Nodemailer to 10.6.1, React Router DOM to 7.18.6, and Lucide React to 1.77.0.
+- Updated ESLint and TypeScript-ESLint tooling, including a patched Minimatch dependency, and updated the React Refresh lint plugin.
+- Retained Node.js 22.13, 24, and 26 compatibility; this release has no database migration or configuration-breaking change from `v3.0.5`.
+
 ## 3.0.5 - 2026-11-20
 
 - Updated the canonical container build and API runtime to the Node.js 24.22.3 security release, including high-severity HTTP/2 and TLS fixes.
